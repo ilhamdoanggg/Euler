@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Change Calculator</title>
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+			crossorigin="anonymous"
+		/>
+	</head>
+
+	<body>
+		<div class="container my-4">
+			<h1 class="text-center">Change Calculator</h1>
+			<div class="mb-3">
+				<label for="cash" class="form-label">Cash Given</label>
+				<input type="number" id="cash" class="form-control" placeholder="Enter cash given" required />
+			</div>
+			<button id="purchase-btn" class="btn btn-primary">Purchase</button>
+			<div id="change-due" class="mt-3"></div>
+		</div>
+		<script>
+			const purchaseButton = document.getElementById('purchase-btn');
+			const cashInput = document.getElementById('cash');
+			const changeDueDiv = document.getElementById('change-due');
+
+			const price = 19.5;
+			const cid = [
+				['PENNY', 0.5],
+				['NICKEL', 0],
+				['DIME', 0],
+				['QUARTER', 0],
+				['ONE', 0],
+				['FIVE', 0],
+				['TEN', 0],
+				['TWENTY', 0],
+				['ONE HUNDRED', 0],
+			];
+
+			const currencyUnit = {
+				PENNY: 0.01,
+				NICKEL: 0.05,
+				DIME: 0.1,
+				QUARTER: 0.25,
+				ONE: 1,
+				FIVE: 5,
+				TEN: 10,
+				TWENTY: 20,
+				'ONE HUNDRED': 100,
+			};
+
+			purchaseButton.addEventListener('click', () => {
+				const cashGiven = parseFloat(cashInput.value);
+				const change = cashGiven - price;
+
+				if (cashGiven < price) {
+					alert('Customer does not have enough money to purchase the item');
+					return;
+				}
+
+				if (cashGiven === price) {
+					changeDueDiv.textContent = 'No change due - customer paid with exact cash';
+					return;
+				}
+
+				let changeToGive = change;
+				const changeArray = [];
+				let totalCid = cid.reduce((acc, curr) => acc + curr[1], 0);
+
+				for (let i = cid.length - 1; i >= 0; i--) {
+					const coinName = cid[i][0];
+					const coinTotal = cid[i][1];
+					const coinValue = currencyUnit[coinName];
+					let coinAmount = (coinTotal / coinValue).toFixed(2);
+					let coinsToReturn = 0;
+
+					while (changeToGive >= coinValue && coinAmount > 0) {
+						changeToGive -= coinValue;
+						changeToGive = changeToGive.toFixed(2);
+						coinAmount--;
+						coinsToReturn++;
+					}
+
+					if (coinsToReturn > 0) {
+						changeArray.push([coinName, (coinsToReturn * coinValue).toFixed(2)]);
+					}
+				}
+
+				if (changeToGive > 0) {
+					changeDueDiv.textContent = 'Status: INSUFFICIENT_FUNDS';
+					return;
+				}
+
+				const drawerEmpty = cid.every((item) => item[1] === 0);
+
+				if (totalCid === change) {
+					changeDueDiv.textContent = `Status: CLOSED ${changeArray
+						.map((item) => `${item[0]}: $${item[1]}`)
+						.join(' ')}`;
+				} else {
+					changeDueDiv.textContent = `Status: OPEN ${changeArray
+						.map((item) => `${item[0]}: $${item[1]}`)
+						.join(' ')}`;
+				}
+			});
+		</script>
+	</body>
+</html>
